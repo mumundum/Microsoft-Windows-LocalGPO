@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
 Removes the LocalGPO GroupPolicy folder to reset Local Group Policy settings.
 

@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
 Detects LocalGPO registry-based policy processing errors from gpupdate output.
 

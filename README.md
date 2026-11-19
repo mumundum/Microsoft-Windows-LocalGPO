@@ -1,4 +1,4 @@
-# Intune Remediation: LocalGPO Processing Error
+﻿# Intune Remediation: LocalGPO Processing Error
 
 These Windows PowerShell 5.1 scripts detect and remediate a specific LocalGPO registry-based policy processing error. Deploy `Detect-LocalGPOProcessingError.ps1` as the Intune detection script and `Remediate-LocalGPOProcessingError.ps1` as its remediation script. Run both scripts in the 64-bit PowerShell host as SYSTEM.
 
