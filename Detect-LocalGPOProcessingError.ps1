@@ -1,3 +1,11 @@
+<#
+.SYNOPSIS
+Detects LocalGPO registry-based policy processing errors from gpupdate output.
+
+Usage: Use this script as the "Detection script" paired with Remediate-LocalGPOProcessingError.ps1 in Intune Remediations. Run in 64-bit PowerShell as SYSTEM.
+Return: exits with code 1 when the matching LocalGPO processing error is detected and code 0 otherwise.
+#>
+
 $ErrorActionPreference = 'Stop'
 
 $systemDirectory = Join-Path $env:SystemRoot 'System32'
@@ -7,7 +15,7 @@ if ([Environment]::Is64BitOperatingSystem -and -not [Environment]::Is64BitProces
 
 $gpupdate = Join-Path $systemDirectory 'gpupdate.exe'
 if (-not (Test-Path -LiteralPath $gpupdate -PathType Leaf)) {
-    Write-Output "Unable to detect LocalGPO status: gpupdate.exe was not found at '$gpupdate'."
+    Write-Error "Error: Unable to detect LocalGPO status: gpupdate.exe was not found at '$gpupdate'."
     exit 0
 }
 
@@ -15,7 +23,7 @@ try {
     $gpupdateOutput = (& $gpupdate /target:computer /force /wait:60 2>&1 | Out-String)
 }
 catch {
-    Write-Output "Unable to run gpupdate; remediation was not triggered. $($_.Exception.Message)"
+    Write-Error "Error: Unable to run gpupdate; remediation was not triggered. $($_.Exception.Message)"
     exit 0
 }
 
@@ -24,9 +32,9 @@ $hasProcessingError = $gpupdateOutput -match '(?i)(Fehler\s+bei\s+der\s+Verarbei
 $hasRegistryPolicySettings = $gpupdateOutput -match '(?i)(registrierungsbasierte\w*\s+Richtlinieneinstellungen|registry-based\s+policy\s+settings)'
 
 if ($hasLocalGpo -and $hasProcessingError -and $hasRegistryPolicySettings) {
-    Write-Output 'Detected the LocalGPO registry-based policy processing error. Remediation is required.'
+    Write-Output 'Non-compliant: LocalGPO registry-based policy processing error. Remediation is required.'
     exit 1
 }
 
-Write-Output 'No matching LocalGPO registry-based policy processing error was detected.'
+Write-Output 'Compliant: No matching LocalGPO registry-based policy processing error was detected.'
 exit 0
