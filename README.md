@@ -4,19 +4,19 @@ These Windows PowerShell 5.1 scripts detect and remediate a specific LocalGPO re
 
 ## Detection
 
-The detection script runs `gpupdate.exe /target:computer /force /wait:60` and reports a non-compliant result only when all of the following appear in its output:
+The detection script runs `gpupdate.exe /target:computer /force /wait:60` and reports a non-compliant result when its output contains all of the following:
 
 - A LocalGPO reference.
 - A registry-based policy settings reference.
 - A group policy processing failure message.
 
-It also recognizes a German processing-error message. Exit code `1` requests remediation; exit code `0` indicates compliance or that a matching error could not be detected. If `gpupdate.exe` cannot be found or invoked, the script exits `0` so that remediation is not triggered.
+It also checks for the same error in new Group Policy events in the Windows Application, System, and Group Policy Operational logs, which helps when the `gpupdate` message is localized or incomplete. Event messages are matched by their LocalGPO, registry-policy, and processing-failure text, rather than relying on a particular event ID. Exit code `1` requests remediation; exit code `0` indicates compliance or that a matching error could not be detected. If `gpupdate.exe` cannot be found or invoked, the script exits `0` so that remediation is not triggered.
 
 ## Remediation
 
-The remediation script removes `%SystemRoot%\System32\GroupPolicy`, which resets the Local Group Policy settings stored below it. It requires administrator privileges, refuses to remove reparse points, and verifies that the folder was removed.
+The remediation script removes `%SystemRoot%\System32\GroupPolicy`, which resets the Local Group Policy settings stored below it, then runs `gpupdate` again to verify that the specific LocalGPO error is gone. It requires administrator privileges, refuses to remove reparse points, and verifies that the folder was removed. It reports remediation failure if the error is still present in the new `gpupdate` output or a new Group Policy event. If the folder is already absent, it still runs the verification refresh.
 
-The script exits `0` when the folder is removed successfully or no folder exists, and exits `1` for privilege, reparse-point, removal, or verification failures.
+The script exits `0` when verification succeeds, and exits `1` for privilege, reparse-point, removal, or verification failures.
 
 ## Intune configuration
 
